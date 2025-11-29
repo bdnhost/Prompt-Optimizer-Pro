@@ -16,3 +16,14 @@ export interface PromptInput {
   originalPrompt: string;
   evaluationCriteria: string;
 }
+
+export interface WordPressConfig {
+  url: string;
+  username: string;
+  appPassword: string;
+}
+
+export interface GeneratedContent {
+  title: string;
+  content: string;
+}

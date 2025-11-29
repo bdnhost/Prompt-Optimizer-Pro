@@ -4,80 +4,71 @@ export const META_PROMPT_TEMPLATE = `
 </Inputs>
 
 <Instructions Structure>
-I will structure the instructions as follows:
-1. Start with a clear explanation of the task - the AI will be optimizing prompts
-2. Present the input variables early:
-   - First, the evaluation criteria (if provided) that define what makes a good prompt
-   - Then, the prompt to be optimized
-3. Provide detailed instructions on the optimization methodology:
-   - Analyze the current prompt's strengths and weaknesses
-   - Apply systematic optimization techniques
-   - Generate an improved version
-4. Specify the output format with XML tags for organization
-5. Include scratchpad for thinking through the analysis before providing the final optimized prompt
+אבנה את ההוראות כדלקמן:
+1. הסבר ברור של המשימה - ה-AI יבצע אופטימיזציה של פרומטים
+2. הצגת משתני הקלט:
+   - קריטריוני הערכה (אם סופקו)
+   - הפרומט לאופטימיזציה
+3. הוראות מפורטות על מתודולוגיית האופטימיזציה
+4. פירוט פורמט הפלט עם תגי XML לארגון
+5. הוספת "דף טיוטה" (scratchpad) לחשיבה לפני מתן התוצאה הסופית
 </Instructions Structure>
 
 <Instructions>
-You will be optimizing a prompt to make it more effective, clear, and likely to produce high-quality results from an AI assistant. Your goal is to apply modern prompt engineering techniques to improve the given prompt.
+אתה מומחה להנדסת פרומטים (Prompt Engineering). המטרה שלך היא לשפר ולבצע אופטימיזציה לפרומט שיתקבל, כדי שיהיה יעיל יותר, ברור יותר ויפיק תוצאות איכותיות יותר ממודלי AI.
+**עליך לכתוב את כל התשובה שלך בעברית.**
 
-Here are the evaluation criteria for what makes a good prompt (if specific criteria are not provided, use general best practices):
+הנה קריטריוני ההערכה לפרומט טוב (אם לא סופקו קריטריונים ספציפיים, השתמש בשיטות עבודה מומלצות כלליות):
 <evaluation_criteria>
 {$EVALUATION_CRITERIA}
 </evaluation_criteria>
 
-Here is the prompt to optimize:
+הנה הפרומט שיש לשפר:
 <prompt>
 {$PROMPT}
 </prompt>
 
-Your task is to analyze and optimize this prompt using the following methodology:
+המשימה שלך היא לנתח ולשפר את הפרומט הזה באמצעות המתודולוגיה הבאה:
 
-1. **Analysis Phase**: Examine the current prompt for:
-   - Clarity and specificity of instructions
-   - Presence of examples or context
-   - Appropriate structure and formatting
-   - Potential ambiguities or missing information
-   - Whether it follows prompt engineering best practices
+1. **שלב הניתוח**: בחן את הפרומט הנוכחי עבור:
+   - בהירות וספציפיות של ההוראות
+   - נוכחות של דוגמאות או הקשר
+   - מבנה ועיצוב מתאימים
+   - עמימות פוטנציאלית או מידע חסר
+   - האם הוא עוקב אחר שיטות עבודה מומלצות
 
-2. **Optimization Techniques**: Apply relevant techniques such as:
-   - Adding clear role definitions (e.g., "You are an expert...")
-   - Breaking complex tasks into step-by-step instructions
-   - Including relevant examples or templates
-   - Specifying output format with XML tags or structured formatting
-   - Adding constraints or guardrails where appropriate
-   - Incorporating chain-of-thought reasoning when beneficial
-   - Making implicit requirements explicit
-   - Removing redundancy while maintaining clarity
-   - Ensuring the prompt is self-contained and unambiguous
+2. **טכניקות אופטימיזציה**: יישם טכניקות רלוונטיות כגון:
+   - הגדרת תפקיד ברורה (למשל, "אתה מומחה ל...")
+   - פירוק משימות מורכבות להוראות צעד-אחר-צעד
+   - הכללת דוגמאות רלוונטיות או תבניות
+   - ציון פורמט הפלט (למשל, JSON, Markdown)
+   - הוספת אילוצים או מגבלות במידת הצורך
+   - הוספת "Chain-of-Thought" כשהדבר מועיל
+   - הפיכת דרישות משתמעות למפורשות
+   - הסרת יתירות תוך שמירה על בהירות
 
-3. **Quality Checks**: Ensure the optimized prompt:
-   - Is more likely to produce consistent, high-quality outputs
-   - Reduces potential for misinterpretation
-   - Maintains or improves upon the original intent
-   - Follows the evaluation criteria provided
+עליך להחזיר את התשובה בפורמט ה-XML הבא בלבד (התוכן בתוך התגים חייב להיות בעברית):
 
-Please structure your response as follows:
-
-First, use a scratchpad to think through your analysis:
+השתמש ב-scratchpad כדי לתכנן את הניתוח שלך:
 <scratchpad>
-- Identify the main weaknesses and areas for improvement in the current prompt
-- Note which optimization techniques would be most beneficial
-- Consider how to maintain the original intent while improving clarity and effectiveness
+- זהה את החולשות העיקריות בפרומט הנוכחי
+- ציין אילו טכניקות אופטימיזציה יהיו הכי מועילות
+- שקול איך לשמור על הכוונה המקורית תוך שיפור היעילות
 </scratchpad>
 
-Then provide your analysis:
+לאחר מכן ספק את הניתוח שלך:
 <analysis>
-Explain what issues you identified with the original prompt and what optimization strategies you plan to apply. Discuss how these changes will improve the prompt's effectiveness.
+הסבר אילו בעיות זיהית בפרומט המקורי ואילו אסטרטגיות שיפור אתה מתכנן ליישם. הסבר כיצד שינויים אלו ישפרו את יעילות הפרומט.
 </analysis>
 
-Finally, provide the optimized prompt:
+לאחר מכן, ספק את הפרומט המשופר (הפרומט עצמו צריך להיות באותה שפה כמו הפרומט המקורי, אך אם המקור היה בעברית, המשך בעברית. הניתוח וההסברים חייבים להיות בעברית):
 <optimized_prompt>
-Write the complete optimized version of the prompt here. This should be a ready-to-use prompt that incorporates all your improvements.
+כתוב כאן את הגרסה המלאה והמשופרת של הפרומט. זה צריך להיות פרומט מוכן לשימוש.
 </optimized_prompt>
 
 <key_improvements>
-Summarize the 3-5 most important changes you made and why they matter.
+סכם את 3-5 השינויים החשובים ביותר שביצעת ומדוע הם חשובים.
 </key_improvements>
 </Instructions>`;
 
-export const DEFAULT_CRITERIA = "Clarity, specificity, structural organization, and inclusion of examples where helpful.";
+export const DEFAULT_CRITERIA = "בהירות, ספציפיות, ארגון מבני והכללת דוגמאות היכן שמועיל.";

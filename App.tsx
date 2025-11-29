@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { Sparkles, ArrowLeft, Wand2, RefreshCw, AlertCircle } from 'lucide-react';
+import { Sparkles, ArrowLeft, Wand2, RefreshCw, AlertCircle, Play, Download, Globe, FileText, File } from 'lucide-react';
 import { Button } from './components/Button';
 import { ResultCard } from './components/ResultCard';
-import { optimizePrompt } from './services/geminiService';
-import { AppStatus, OptimizationResult } from './types';
+import { WordPressModal } from './components/WordPressModal';
+import { optimizePrompt, generateContentFromPrompt } from './services/geminiService';
+import { exportToPDF, exportToDOCX } from './services/exportService';
+import { publishToWordPress } from './services/wordpressService';
+import { AppStatus, OptimizationResult, WordPressConfig } from './types';
 
 function App() {
   const [prompt, setPrompt] = useState('');
@@ -12,12 +15,21 @@ function App() {
   const [result, setResult] = useState<OptimizationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // New states for content generation and publishing
+  const [generatedContent, setGeneratedContent] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isWPModalOpen, setIsWPModalOpen] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishSuccess, setPublishSuccess] = useState<string | null>(null);
+
   const handleOptimize = async () => {
     if (!prompt.trim()) return;
 
     setStatus(AppStatus.LOADING);
     setError(null);
     setResult(null);
+    setGeneratedContent(null);
+    setPublishSuccess(null);
 
     try {
       const data = await optimizePrompt(prompt, criteria);
@@ -29,16 +41,73 @@ function App() {
     }
   };
 
+  const handleGenerateContent = async () => {
+    if (!result?.optimizedPrompt) return;
+
+    setIsGenerating(true);
+    setError(null);
+    
+    try {
+      const content = await generateContentFromPrompt(result.optimizedPrompt);
+      setGeneratedContent(content);
+    } catch (err: any) {
+      setError(err.message || 'שגיאה ביצירת התוכן');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleExportPDF = () => {
+    if (generatedContent) {
+      exportToPDF(generatedContent, 'opti-prompt-result');
+    }
+  };
+
+  const handleExportDOCX = () => {
+    if (generatedContent) {
+      exportToDOCX(generatedContent, 'opti-prompt-result');
+    }
+  };
+
+  const handleWordPressSubmit = async (config: WordPressConfig) => {
+    if (!generatedContent) return;
+    
+    setIsPublishing(true);
+    setError(null);
+    
+    try {
+      // Extract a simple title from first line or use default
+      const title = generatedContent.split('\n')[0].substring(0, 50).replace(/[#*]/g, '') || "Generated Content";
+      await publishToWordPress(config, title, generatedContent);
+      setPublishSuccess("הפוסט פורסם בהצלחה באתר שלך!");
+      setIsWPModalOpen(false);
+    } catch (err: any) {
+      // Keep modal open on error so user can fix details
+      alert(`שגיאה בפרסום: ${err.message}`);
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
   const handleReset = () => {
     setPrompt('');
     setCriteria('');
     setStatus(AppStatus.IDLE);
     setResult(null);
     setError(null);
+    setGeneratedContent(null);
+    setPublishSuccess(null);
   };
 
   return (
     <div className="min-h-screen text-slate-900 pb-20">
+      <WordPressModal 
+        isOpen={isWPModalOpen}
+        onClose={() => setIsWPModalOpen(false)}
+        onSubmit={handleWordPressSubmit}
+        isLoading={isPublishing}
+      />
+
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -131,7 +200,7 @@ function App() {
              )}
 
              {status === AppStatus.ERROR && (
-                <div className="bg-red-50 border border-red-200 rounded-2xl p-6 flex items-start space-x-4 space-x-reverse">
+                <div className="bg-red-50 border border-red-200 rounded-2xl p-6 flex items-start space-x-4 space-x-reverse mb-6">
                   <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
                   <div>
                     <h3 className="text-lg font-bold text-red-800 mb-1">שגיאה</h3>
@@ -152,12 +221,80 @@ function App() {
                     defaultExpanded={true}
                   />
 
+                   {/* Execution Section */}
+                   <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl p-6 text-white shadow-xl">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-bold flex items-center">
+                        <Play className="w-5 h-5 ml-2 text-green-400" />
+                        הרצת הפרומט המשופר
+                      </h3>
+                    </div>
+                    <p className="text-slate-300 text-sm mb-6">
+                      רוצה לראות את התוצאה? לחץ למטה כדי לשלוח את הפרומט המשופר ל-Gemini וליצור את התוכן שלך עכשיו.
+                    </p>
+                    <Button 
+                      onClick={handleGenerateContent} 
+                      isLoading={isGenerating}
+                      variant="secondary"
+                      className="w-full bg-white/10 hover:bg-white/20 border-white/20 text-white hover:text-white"
+                      icon={<Sparkles className="w-4 h-4" />}
+                    >
+                      צור תוכן באמצעות הפרומט המשופר
+                    </Button>
+                   </div>
+
+                   {/* Generated Content Result */}
+                   {generatedContent && (
+                     <div className="animate-fadeIn">
+                       <ResultCard 
+                          title="תוכן שנוצר" 
+                          content={generatedContent} 
+                          color="amber"
+                          defaultExpanded={true}
+                        />
+
+                        {publishSuccess && (
+                          <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center">
+                             <Globe className="w-5 h-5 ml-2" />
+                             {publishSuccess}
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+                          <Button 
+                            onClick={handleExportPDF} 
+                            variant="secondary"
+                            icon={<FileText className="w-4 h-4" />}
+                            className="text-sm"
+                          >
+                            PDF ייצא ל
+                          </Button>
+                          <Button 
+                            onClick={handleExportDOCX} 
+                            variant="secondary"
+                            icon={<File className="w-4 h-4" />}
+                            className="text-sm"
+                          >
+                            DOCX ייצא ל
+                          </Button>
+                          <Button 
+                            onClick={() => setIsWPModalOpen(true)} 
+                            variant="primary"
+                            icon={<Globe className="w-4 h-4" />}
+                            className="text-sm bg-blue-600 hover:bg-blue-700"
+                          >
+                            פרסם לוורדפרס
+                          </Button>
+                        </div>
+                     </div>
+                   )}
+
                   {/* Key Improvements */}
                   <ResultCard 
                     title="שיפורים עיקריים" 
                     content={result.keyImprovements} 
                     color="purple"
-                    defaultExpanded={true}
+                    defaultExpanded={false}
                   />
 
                   {/* Detailed Analysis */}

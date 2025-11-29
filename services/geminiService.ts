@@ -35,6 +35,26 @@ export const optimizePrompt = async (
   }
 };
 
+export const generateContentFromPrompt = async (optimizedPrompt: string): Promise<string> => {
+   if (!process.env.API_KEY) {
+    throw new Error("API Key is missing");
+  }
+
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: optimizedPrompt,
+    });
+    
+    return response.text || "";
+  } catch (error) {
+    console.error("Error generating content:", error);
+    throw error;
+  }
+}
+
 const extractTagContent = (text: string, tagName: string): string => {
   const regex = new RegExp(`<${tagName}>([\\s\\S]*?)<\\/${tagName}>`, 'i');
   const match = text.match(regex);
